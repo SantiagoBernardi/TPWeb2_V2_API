@@ -21,7 +21,29 @@ require_once 'app\helpers\api-helper.php';
         private function getData() {
             return json_decode($this->data);
         }   
-        
+
+        private function verifyParams($params) {
+            $columns = [
+                "id",
+                "foto", 
+                "especie", 
+                "familia", 
+                "conservacion", 
+                "id_ecosistema_fk",
+            ];
+            if ($params["field"] != null && !in_array(strtolower($params["field"]), $columns)) {
+                $this->view->response("La columna ingresada '$params[field]' es incorrecta. Por favor reintente ingresando '$columns[0]', '$columns[1]', '$columns[2]', '$columns[3]', o '$columns[4]'", 400);
+                die;
+            }
+            if ($params["sort"] != null && $params["sort"] != "asc" && $params["sort"] != "desc") {
+                $this->view->response("El parametro de orden '$params[sort]' no existe. Ingrese 'asc' o 'desc'", 400);
+                die;
+            }
+            if ($params["where"] != null && $params["where"] != 1 && $params["where"] != 2 && $params["where"] != 3 && $params["where"] != 4 && $params["where"] != 5 && $params["where"] != "anuros.id_ecosistema_fk") {
+                $this->view->response("El parametro de filtro '$params[where]' no existe. Ingrese un ecosistema valido entre 1 y 5", 400);
+                die;
+            }
+        }
 
         public function getAnuros($params = null) {
             $params = [
@@ -46,7 +68,7 @@ require_once 'app\helpers\api-helper.php';
                     $params["offset"] = ($_GET['offset']-1)*$params["limit"];
                 }
             }
-
+            $this->verifyParams($params);
             $bd = $this->model->getAnuros($params);
             $this->view->response($bd);
             
